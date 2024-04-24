@@ -3,9 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/global.css" />
+    <link rel="stylesheet" href="/admin.css">
     <title>Create users</title>
 </head>
-<body>
-    
+<body data-darkmode>
+    <a href="./" class="return">Go back</a>
+    <main>
+        <form action="/api/createUser" method="POST">
+            <input type="text" name="firstname" placeholder="firstname">
+            <input type="text" name="lastname" placeholder="lastname">
+            <input type="mail" name="mail" placeholder="example@mail.com">
+            <input type="password" name="password" placeholder="password">
+            <select name="role">
+                <option>-- Choose a role --</option>
+                <option value=STUDENT>STUDENT</option>
+                <option value=TEACHER>TEACHER</option>
+                <option value=ADMIN>ADMIN</option>
+            </select>
+            <input type="submit">
+        </form>
+    </main>
 </body>
 </html>

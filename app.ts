@@ -2,7 +2,6 @@ import express from "express";
 import { PrismaClient, Role } from "@prisma/client";
 import crypto from "crypto";
 import cookieParser from "cookie-parser";
-import path from "path";
 
 // using these have simple commands and functions to use
 const prisma = new PrismaClient();
@@ -45,6 +44,7 @@ app.use(async (req, res, next) => {
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
 
+// function for creating a user
 async function createUser() {
   const user = await prisma.users.create({
     data: {
@@ -104,6 +104,90 @@ app.post("/login", async (req, res) => {
     res.redirect("/");
   }
 });
+
+const pageRoutes = {
+  adminEdit: (req, res) => {
+    res.sendFile(__dirname + "/public/admin/edit.html");
+  },
+  adminCreate: (req, res) => {
+    res.sendFile(__dirname + "/public/admin/create.html");
+  },
+  adminEditID: (req, res) => {
+    res.sendFile(__dirname + "/public/admin/id.html");
+  }
+}
+
+const apiRoutes = {
+  getUsers: async (req, res) => {
+    const users = await prisma.users.findMany();
+    res.json(users);
+  },
+  getUser: async (req, res) => {
+    const id = parseInt(req.params.id);
+    const user = await prisma.users.findFirst({
+      where: {
+        id: id,
+      },
+    });
+
+    res.json(user);
+  },
+  createUser: async (req, res) => {
+    const { firstname, lastname, mail, password, role } = req.body;
+
+    const user = await prisma.users.create({
+      data: {
+        firstname: firstname,
+        lastname: lastname,
+        mail: mail,
+        password: crypto.createHash("sha256").update(password).digest("hex"),
+        role: role,
+      },
+    });
+
+    res.json(user);
+  },
+  updateUser: async (req, res) => {
+    const { id, firstname, lastname, mail, password, role } = req.body;
+
+    console.log(id)
+
+    const updateUser = await prisma.users.update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        firstname: firstname,
+        lastname: lastname,
+        mail: mail,
+        password: crypto.createHash("sha256").update(password).digest("hex"),
+        role: role,
+      }
+    })
+  
+    res.redirect("/admin/edit");
+  },
+  deleteUser: async (req, res) => {
+    const id = parseInt(req.params.id);
+    const user = await prisma.users.delete({
+      where: {
+        id: id,
+      },
+    });
+  },
+};
+
+// get requests for admin
+app.get("/admin/edit", pageRoutes.adminEdit);
+app.get("/admin/create", pageRoutes.adminCreate);
+app.get("/api/users", apiRoutes.getUsers);
+app.get("/admin/edit/:id", pageRoutes.adminEditID);
+app.get("/api/getUser/:id", apiRoutes.getUser);
+
+// post requests
+app.post("/api/createUser", apiRoutes.createUser);
+app.post("/api/deleteUser/:id", apiRoutes.deleteUser);
+app.post("/api/updateUser/", apiRoutes.updateUser);
 
 // start the server
 app.listen(3000, () => {
