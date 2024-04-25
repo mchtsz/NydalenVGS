@@ -148,13 +148,11 @@ const apiRoutes = {
     res.json(user);
   },
   updateUser: async (req, res) => {
-    const { id, firstname, lastname, mail, password, role } = req.body;
-
-    console.log(id)
+    const { token, id, firstname, lastname, mail, password, role } = req.body;
 
     const updateUser = await prisma.users.update({
       where: {
-        id: parseInt(id),
+        token: token,
       },
       data: {
         firstname: firstname,
