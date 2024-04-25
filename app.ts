@@ -38,7 +38,7 @@ app.use(async (req, res, next) => {
   }
 
   next(); // if everything works let them through
-});
+}); 
 
 // using these after middleware so stuff works, these help to read req.body and use public folder
 app.use(express.urlencoded({ extended: false }));
@@ -68,7 +68,7 @@ async function createAdmin() {
       firstname: "admin",
       lastname: "admin",
       mail: "admin@test.com",
-      password: crypto.createHash("sha256").update("admin").digest("hex"),
+      password: crypto.createHash("sha256").update("Passord01").digest("hex"),
       role: Role.ADMIN,
     },
   });
@@ -89,6 +89,8 @@ app.post("/login", async (req, res) => {
     },
   });
 
+  console.log(userData)
+
   if (userData) {
     switch (userData.role === Role.ADMIN) {
       case true:
@@ -106,6 +108,9 @@ app.post("/login", async (req, res) => {
 });
 
 const pageRoutes = {
+  welcome: (req, res) => {
+    res.sendFile(__dirname + "/public/welcome.html");
+  },
   adminEdit: (req, res) => {
     res.sendFile(__dirname + "/public/admin/edit.html");
   },
@@ -145,11 +150,13 @@ const apiRoutes = {
       },
     });
 
-    res.json(user);
+    res.redirect("/admin/");
   },
   updateUser: async (req, res) => {
     const { token, id, firstname, lastname, mail, password, role } = req.body;
-
+  
+    const hashedPassword = password ? crypto.createHash("sha256").update(password).digest("hex") : undefined;
+  
     const updateUser = await prisma.users.update({
       where: {
         token: token,
@@ -158,11 +165,11 @@ const apiRoutes = {
         firstname: firstname,
         lastname: lastname,
         mail: mail,
-        password: crypto.createHash("sha256").update(password).digest("hex"),
+        password: hashedPassword,
         role: role,
       }
     })
-  
+    
     res.redirect("/admin/edit");
   },
   deleteUser: async (req, res) => {
@@ -176,6 +183,7 @@ const apiRoutes = {
 };
 
 // get requests for admin
+app.get("/welcome", pageRoutes.welcome)
 app.get("/admin/edit", pageRoutes.adminEdit);
 app.get("/admin/create", pageRoutes.adminCreate);
 app.get("/api/users", apiRoutes.getUsers);
