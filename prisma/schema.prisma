@@ -14,13 +14,27 @@ model Users {
   lastname  String
   mail      String @unique
   password  String
-  role Role
+  classID   Int?
+  class     Class?   @relation(fields: [classID], references: [id])
+  role      Role
 
   token String @unique @default(cuid())
+}
+
+model Class {
+  id    Int   @id @default(autoincrement())
+  grade Grade
+  users Users[]
 }
 
 enum Role {
   STUDENT
   TEACHER
   ADMIN
+}
+
+enum Grade {
+  VG1
+  VG2
+  VG3
 }

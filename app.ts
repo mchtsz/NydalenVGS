@@ -89,8 +89,6 @@ app.post("/login", async (req, res) => {
     },
   });
 
-  console.log(userData)
-
   if (userData) {
     switch (userData.role === Role.ADMIN) {
       case true:
@@ -119,6 +117,12 @@ const pageRoutes = {
   },
   adminEditID: (req, res) => {
     res.sendFile(__dirname + "/public/admin/id.html");
+  },
+  adminManageID: (req, res) => {
+    res.sendFile(__dirname + "/public/admin/manage/id.html")
+  },
+  adminManageAdd: (req, res) => {
+    res.sendFile(__dirname + "/public/admin/manage/add.html")
   }
 }
 
@@ -127,7 +131,11 @@ const apiRoutes = {
     const users = await prisma.users.findMany();
     res.json(users);
   },
-  getUser: async (req, res) => {
+  getClasses: async (req, res) => {
+    const classes = await prisma.class.findMany();
+    res.json(classes);
+  },
+  getSpecificUser: async (req, res) => {
     const id = parseInt(req.params.id);
     const user = await prisma.users.findFirst({
       where: {
@@ -152,10 +160,46 @@ const apiRoutes = {
 
     res.redirect("/admin/");
   },
+  createClass: async (req, res) => {
+    const {grade} = req.body
+
+    const createdClass = await prisma.class.create({
+      data: {
+        grade: grade
+      }
+    })
+
+    res.redirect("/admin/manage")
+  },
+  getClassByID: async (req, res) => {
+    const id = parseInt(req.params.id);
+    const classData = await prisma.class.findFirst({
+      where: {
+        id: id
+      }, include: {
+        users: true, // Include the users relation
+      },
+    })
+
+    res.json(classData);
+  },
+  removeFromClass: async (req, res) => {
+    const id = parseInt(req.params.id);
+    const user = await prisma.users.update({
+      where: {
+        id: id,
+      },
+      data: {
+        classID: null
+      }
+    });
+    res.redirect("/admin/manage")
+  },
   updateUser: async (req, res) => {
-    const { token, id, firstname, lastname, mail, password, role } = req.body;
+    const { token, firstname, lastname, mail, password, role, classID } = req.body;
   
     const hashedPassword = password ? crypto.createHash("sha256").update(password).digest("hex") : undefined;
+    const ifClassID = classID ? parseInt(classID) : undefined;
   
     const updateUser = await prisma.users.update({
       where: {
@@ -167,6 +211,7 @@ const apiRoutes = {
         mail: mail,
         password: hashedPassword,
         role: role,
+        classID: ifClassID
       }
     })
     
@@ -188,10 +233,15 @@ app.get("/admin/edit", pageRoutes.adminEdit);
 app.get("/admin/create", pageRoutes.adminCreate);
 app.get("/api/users", apiRoutes.getUsers);
 app.get("/admin/edit/:id", pageRoutes.adminEditID);
-app.get("/api/getUser/:id", apiRoutes.getUser);
+app.get("/admin/manage/:id", pageRoutes.adminManageID)
+app.get("/api/getUser/:id", apiRoutes.getSpecificUser);
+app.get("/api/getClass/:id", apiRoutes.getClassByID)
+app.get("/api/classes", apiRoutes.getClasses);
 
 // post requests
 app.post("/api/createUser", apiRoutes.createUser);
+app.post("/api/removeFromClass/:id", apiRoutes.removeFromClass)
+app.post("/api/createClass", apiRoutes.createClass)
 app.post("/api/deleteUser/:id", apiRoutes.deleteUser);
 app.post("/api/updateUser/", apiRoutes.updateUser);
 

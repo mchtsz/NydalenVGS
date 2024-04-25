@@ -11,16 +11,17 @@
       fetch("/api/getUser/" + id)
         .then((res) => res.json())
         .then((data) => {
+          if (data.classID == undefined) {
+            data.classID = "ingen klasse";
+          }
           const form = document.querySelector("form");
-          form.innerHTML = 
-          `
+          form.innerHTML = `
             <input type="hidden" name="token" value="${data.token}">
-            <input type="text" name="id" value="${
-              data.id
-            }" readonly>
+            <input type="text" name="id" value="${data.id}" readonly>
             <input type="text" name="firstname" value="${data.firstname}">
             <input type="text" name="lastname" value="${data.lastname}">
             <input type="text" name="mail" value="${data.mail}">
+            <input type="text" name="classID" placeholder="${data.classID}">
             <input type="text" name="password" placeholder="edit password">
             <select name="role">
                 <option>-- Choose a role --</option>

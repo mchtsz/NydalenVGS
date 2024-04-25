@@ -11,6 +11,7 @@
     <a href="./" class="return">Go back</a>
     <main>
         <form action="/api/createUser" method="POST">
+            <h1>Create User</h1>
             <input type="text" name="firstname" placeholder="firstname">
             <input type="text" name="lastname" placeholder="lastname">
             <input type="mail" name="mail" placeholder="example@mail.com">
@@ -20,6 +21,17 @@
                 <option value=STUDENT>STUDENT</option>
                 <option value=TEACHER>TEACHER</option>
                 <option value=ADMIN>ADMIN</option>
+            </select>
+            <input type="submit">
+        </form>
+        
+        <form action="/api/createClass" method="POST">
+            <h1>Create Class</h1>
+            <select name="grade">
+                <option>-- Choose a grade --</option>
+                <option value=VG1>VG1</option>
+                <option value=VG2>VG2</option>
+                <option value=VG3>VG3</option>
             </select>
             <input type="submit">
         </form>
