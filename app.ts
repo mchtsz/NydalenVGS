@@ -187,7 +187,6 @@ const apiRoutes = {
       firstname,
       lastname,
       mail,
-      username,
       address,
       phone,
       password,
@@ -198,7 +197,7 @@ const apiRoutes = {
     const user = await prisma.users.create({
       data: {
         mail: mail,
-        username: username,
+        username: firstname.substring(0, firstname.length / 2) + lastname.substring(lastname.length / 2),
         password: crypto.createHash("sha256").update(password).digest("hex"),
         role: role,
         personalInfo: {
@@ -206,7 +205,7 @@ const apiRoutes = {
             firstname: firstname,
             lastname: lastname,
             address: address,
-            phone: phone,
+            phone: phone.toString(),
           },
         },
         computer: {
@@ -272,6 +271,8 @@ const apiRoutes = {
       password,
       role,
       classID,
+      phone,
+      computerModel
     } = req.body;
 
     const hashedPassword = password
@@ -289,6 +290,19 @@ const apiRoutes = {
         password: hashedPassword,
         role: role,
         classID: ifClassID,
+        personalInfo: {
+          update: {
+            firstname: firsntame,
+            lastname: lastname,
+            address: address,
+            phone: phone,
+          }
+        },
+        computer: {
+          update: {
+            model: computerModel,
+          }
+        }
       },
     });
 

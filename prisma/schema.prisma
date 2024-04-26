@@ -28,7 +28,7 @@ model ContactInfo {
   phone     String
   address   String
   userID    Int    @unique
-  user      Users  @relation(fields: [userID], references: [id])
+  user      Users  @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
 
 model Computer {
@@ -36,7 +36,7 @@ model Computer {
   age    DateTime
   model  String
   userID Int?     @unique
-  user   Users?   @relation(fields: [userID], references: [id])
+  user   Users?   @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
 
 model Class {
