@@ -25,12 +25,13 @@
           const res = await fetch("http://localhost:3000/api/users");
           const data = await res.json();
 
+          console.log(data)
           const createRow = (user, bodyId, editUrl) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="id">${user.id}</td>
-                <td>${user.firstname}</td>
-                <td>${user.lastname}</td>
+                <td>${user.personalInfo.firstname}</td>
+                <td>${user.personalInfo.lastname}</td>
                 <td>${user.mail}</td>
                 <td>${user.role}</td>
                 <td>

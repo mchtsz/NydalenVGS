@@ -17,7 +17,7 @@ model Users {
   role     Role
   classID  Int?
   class    Class?       @relation(fields: [classID], references: [id])
-  personal ContactInfo?
+  personalInfo ContactInfo?
   computer Computer?
 }
 

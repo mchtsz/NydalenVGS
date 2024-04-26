@@ -29,7 +29,7 @@ app.use(async (req, res, next) => {
       token: token,
     },
   });
-  
+
   if (!user) return res.redirect("/"); // if no user return to login
 
   // if they ask for admin path and they're not admin, redirect to welcome
@@ -38,7 +38,7 @@ app.use(async (req, res, next) => {
   }
 
   next(); // if everything works let them through
-}); 
+});
 
 // using these after middleware so stuff works, these help to read req.body and use public folder
 app.use(express.urlencoded({ extended: false }));
@@ -48,37 +48,61 @@ app.use(express.static("public"));
 async function createUser() {
   const user = await prisma.users.create({
     data: {
-      firstname: "test",
-      lastname: "testing",
       mail: "test@test.com",
-      address: "test street",
+      username: "testUser",
       password: crypto.createHash("sha256").update("Passord01").digest("hex"),
       role: Role.STUDENT,
+      personalInfo: {
+        create: {
+          firstname: "test",
+          lastname: "User",
+          address: "User street",
+          phone: "98979695",
+        },
+      },
+      computer: {
+        create: {
+          age: new Date().toISOString(),
+          model: "Computer test",
+        },
+      },
     },
   });
 
-  console.log(user.firstname + "" + "has been created");
+  console.log(user.username + " has been created");
 
   return user;
 }
-
 // function to create an admin
 async function createAdmin() {
   const admin = await prisma.users.create({
     data: {
-      firstname: "admin",
-      lastname: "admin",
       mail: "admin@test.com",
-      address: "admin street",
+      username: "admin",
       password: crypto.createHash("sha256").update("Passord01").digest("hex"),
       role: Role.ADMIN,
+      personalInfo: {
+        create: {
+          firstname: "admin",
+          lastname: "admin",
+          address: "admin street",
+          phone: "123456789",
+        },
+      },
+      computer: {
+        create: {
+          age: new Date().toISOString(),
+          model: "admin Computer",
+        },
+      },
     },
   });
 
-  console.log(`${admin.firstname} has been created`);
+  console.log(`${admin.username} has been created`);
 
   return admin;
 }
+
 
 // post for login
 app.post("/login", async (req, res) => {
@@ -121,16 +145,23 @@ const pageRoutes = {
     res.sendFile(__dirname + "/public/admin/id.html");
   },
   adminManageID: (req, res) => {
-    res.sendFile(__dirname + "/public/admin/manage/id.html")
+    res.sendFile(__dirname + "/public/admin/manage/id.html");
   },
   adminManageAdd: (req, res) => {
-    res.sendFile(__dirname + "/public/admin/manage/add.html")
-  }
-}
+    res.sendFile(__dirname + "/public/admin/manage/add.html");
+  },
+};
 
 const apiRoutes = {
   getUsers: async (req, res) => {
-    const users = await prisma.users.findMany();
+    const users = await prisma.users.findMany(
+      {
+        include: {
+          personalInfo: true,
+          computer: true,
+        },
+      }
+    );
     res.json(users);
   },
   getClasses: async (req, res) => {
@@ -143,46 +174,78 @@ const apiRoutes = {
       where: {
         id: id,
       },
+      include: {
+        personalInfo: true,
+        computer: true,
+      },
     });
 
     res.json(user);
   },
   createUser: async (req, res) => {
-    const { firstname, lastname, mail, address, password, role } = req.body;
+    const {
+      firstname,
+      lastname,
+      mail,
+      username,
+      address,
+      phone,
+      password,
+      role,
+      computerModel
+    } = req.body;
 
     const user = await prisma.users.create({
       data: {
-        firstname: firstname,
-        lastname: lastname,
         mail: mail,
-        address: address,
+        username: username,
         password: crypto.createHash("sha256").update(password).digest("hex"),
         role: role,
+        personalInfo: {
+          create: {
+            firstname: firstname,
+            lastname: lastname,
+            address: address,
+            phone: phone,
+          },
+        },
+        computer: {
+          create: {
+            age: new Date().toISOString(),
+            model: computerModel,
+          },
+        }
       },
     });
 
     res.redirect("/admin/");
   },
   createClass: async (req, res) => {
-    const {grade} = req.body
+    const { grade } = req.body;
 
     const createdClass = await prisma.class.create({
       data: {
-        grade: grade
-      }
-    })
+        grade: grade,
+      },
+    });
 
-    res.redirect("/admin/manage")
+    res.redirect("/admin/manage");
   },
   getClassByID: async (req, res) => {
     const id = parseInt(req.params.id);
     const classData = await prisma.class.findFirst({
       where: {
-        id: id
-      }, include: {
-        users: true, // Include the users relation
+        id: id,
       },
-    })
+      include: {
+        users: {
+          include: {
+            personalInfo: true,
+            computer: true,
+          },
+        }
+      },
+    });
 
     res.json(classData);
   },
@@ -193,32 +256,42 @@ const apiRoutes = {
         id: id,
       },
       data: {
-        classID: null
-      }
+        classID: null,
+      },
     });
-    res.redirect("/admin/manage")
+    res.redirect("/admin/manage");
   },
   updateUser: async (req, res) => {
-    const { token, firstname, lastname, mail, address, password, role, classID } = req.body;
-  
-    const hashedPassword = password ? crypto.createHash("sha256").update(password).digest("hex") : undefined;
+    const {
+      token,
+      firsntame,
+      lastname,
+      username,
+      mail,
+      address,
+      password,
+      role,
+      classID,
+    } = req.body;
+
+    const hashedPassword = password
+      ? crypto.createHash("sha256").update(password).digest("hex")
+      : undefined;
     const ifClassID = classID ? parseInt(classID) : undefined;
-  
+
     const updateUser = await prisma.users.update({
       where: {
         token: token,
       },
       data: {
-        firstname: firstname,
-        lastname: lastname,
         mail: mail,
-        address: address,
+        username: username,
         password: hashedPassword,
         role: role,
-        classID: ifClassID
-      }
-    })
-    
+        classID: ifClassID,
+      },
+    });
+
     res.redirect("/admin/edit");
   },
   deleteUser: async (req, res) => {
@@ -232,20 +305,20 @@ const apiRoutes = {
 };
 
 // get requests for admin
-app.get("/welcome", pageRoutes.welcome)
+app.get("/welcome", pageRoutes.welcome);
 app.get("/admin/edit", pageRoutes.adminEdit);
 app.get("/admin/create", pageRoutes.adminCreate);
 app.get("/api/users", apiRoutes.getUsers);
 app.get("/admin/edit/:id", pageRoutes.adminEditID);
-app.get("/admin/manage/:id", pageRoutes.adminManageID)
+app.get("/admin/manage/:id", pageRoutes.adminManageID);
 app.get("/api/getUser/:id", apiRoutes.getSpecificUser);
-app.get("/api/getClass/:id", apiRoutes.getClassByID)
+app.get("/api/getClass/:id", apiRoutes.getClassByID);
 app.get("/api/classes", apiRoutes.getClasses);
 
 // post requests
 app.post("/api/createUser", apiRoutes.createUser);
-app.post("/api/removeFromClass/:id", apiRoutes.removeFromClass)
-app.post("/api/createClass", apiRoutes.createClass)
+app.post("/api/removeFromClass/:id", apiRoutes.removeFromClass);
+app.post("/api/createClass", apiRoutes.createClass);
 app.post("/api/deleteUser/:id", apiRoutes.deleteUser);
 app.post("/api/updateUser/", apiRoutes.updateUser);
 

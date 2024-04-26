@@ -30,8 +30,8 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
         <td class="id">${user.id}</td>
-        <td>${user.firstname}</td>
-        <td>${user.lastname}</td>
+        <td>${user.personalInfo.firstname}</td>
+        <td>${user.personalInfo.lastname}</td>
         <td>${user.role}</td>
         <td>
             <form class="form-class" action="/api/removeFromClass/${user.id}" method="POST">
