@@ -51,6 +51,7 @@ async function createUser() {
       firstname: "test",
       lastname: "testing",
       mail: "test@test.com",
+      address: "test street",
       password: crypto.createHash("sha256").update("Passord01").digest("hex"),
       role: Role.STUDENT,
     },
@@ -68,6 +69,7 @@ async function createAdmin() {
       firstname: "admin",
       lastname: "admin",
       mail: "admin@test.com",
+      address: "admin street",
       password: crypto.createHash("sha256").update("Passord01").digest("hex"),
       role: Role.ADMIN,
     },
@@ -146,13 +148,14 @@ const apiRoutes = {
     res.json(user);
   },
   createUser: async (req, res) => {
-    const { firstname, lastname, mail, password, role } = req.body;
+    const { firstname, lastname, mail, address, password, role } = req.body;
 
     const user = await prisma.users.create({
       data: {
         firstname: firstname,
         lastname: lastname,
         mail: mail,
+        address: address,
         password: crypto.createHash("sha256").update(password).digest("hex"),
         role: role,
       },
@@ -196,7 +199,7 @@ const apiRoutes = {
     res.redirect("/admin/manage")
   },
   updateUser: async (req, res) => {
-    const { token, firstname, lastname, mail, password, role, classID } = req.body;
+    const { token, firstname, lastname, mail, address, password, role, classID } = req.body;
   
     const hashedPassword = password ? crypto.createHash("sha256").update(password).digest("hex") : undefined;
     const ifClassID = classID ? parseInt(classID) : undefined;
@@ -209,6 +212,7 @@ const apiRoutes = {
         firstname: firstname,
         lastname: lastname,
         mail: mail,
+        address: address,
         password: hashedPassword,
         role: role,
         classID: ifClassID

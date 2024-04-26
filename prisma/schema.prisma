@@ -9,20 +9,38 @@ generator client {
 }
 
 model Users {
+  id       Int          @id @default(autoincrement())
+  username String       @unique
+  mail     String       @unique
+  password String
+  token    String       @unique @default(cuid())
+  role     Role
+  classID  Int?
+  class    Class?       @relation(fields: [classID], references: [id])
+  personal ContactInfo?
+  computer Computer?
+}
+
+model ContactInfo {
   id        Int    @id @default(autoincrement())
   firstname String
   lastname  String
-  mail      String @unique
-  password  String
-  classID   Int?
-  class     Class?   @relation(fields: [classID], references: [id])
-  role      Role
+  phone     String
+  address   String
+  userID    Int    @unique
+  user      Users  @relation(fields: [userID], references: [id])
+}
 
-  token String @unique @default(cuid())
+model Computer {
+  id     Int      @id @default(autoincrement())
+  age    DateTime
+  model  String
+  userID Int?     @unique
+  user   Users?   @relation(fields: [userID], references: [id])
 }
 
 model Class {
-  id    Int   @id @default(autoincrement())
+  id    Int     @id @default(autoincrement())
   grade Grade
   users Users[]
 }
@@ -31,6 +49,8 @@ enum Role {
   STUDENT
   TEACHER
   ADMIN
+  ENVIRONMENTWORKER
+  ITCOWORKER
 }
 
 enum Grade {
