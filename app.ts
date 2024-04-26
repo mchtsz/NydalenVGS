@@ -103,7 +103,6 @@ async function createAdmin() {
   return admin;
 }
 
-
 // post for login
 app.post("/login", async (req, res) => {
   const { mail, password } = req.body;
@@ -154,14 +153,12 @@ const pageRoutes = {
 
 const apiRoutes = {
   getUsers: async (req, res) => {
-    const users = await prisma.users.findMany(
-      {
-        include: {
-          personalInfo: true,
-          computer: true,
-        },
-      }
-    );
+    const users = await prisma.users.findMany({
+      include: {
+        personalInfo: true,
+        computer: true,
+      },
+    });
     res.json(users);
   },
   getClasses: async (req, res) => {
@@ -191,13 +188,15 @@ const apiRoutes = {
       phone,
       password,
       role,
-      computerModel
+      computerModel,
     } = req.body;
 
     const user = await prisma.users.create({
       data: {
         mail: mail,
-        username: firstname.substring(0, firstname.length / 2) + lastname.substring(lastname.length / 2),
+        username:
+          firstname.substring(0, firstname.length / 2) +
+          lastname.substring(lastname.length / 2),
         password: crypto.createHash("sha256").update(password).digest("hex"),
         role: role,
         personalInfo: {
@@ -213,7 +212,7 @@ const apiRoutes = {
             age: new Date().toISOString(),
             model: computerModel,
           },
-        }
+        },
       },
     });
 
@@ -242,7 +241,7 @@ const apiRoutes = {
             personalInfo: true,
             computer: true,
           },
-        }
+        },
       },
     });
 
@@ -263,7 +262,7 @@ const apiRoutes = {
   updateUser: async (req, res) => {
     const {
       token,
-      firsntame,
+      firstname,
       lastname,
       username,
       mail,
@@ -272,7 +271,7 @@ const apiRoutes = {
       role,
       classID,
       phone,
-      computerModel
+      computerModel,
     } = req.body;
 
     const hashedPassword = password
@@ -292,17 +291,17 @@ const apiRoutes = {
         classID: ifClassID,
         personalInfo: {
           update: {
-            firstname: firsntame,
+            firstname: firstname,
             lastname: lastname,
             address: address,
             phone: phone,
-          }
+          },
         },
         computer: {
           update: {
             model: computerModel,
-          }
-        }
+          },
+        },
       },
     });
 
