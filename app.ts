@@ -115,13 +115,17 @@ app.post("/login", async (req, res) => {
   });
 
   if (userData) {
-    switch (userData.role === Role.ADMIN) {
-      case true:
-        res.cookie("token", userData.token);
+    const { role, token } = userData;
+    res.cookie("token", token);
+
+    switch (role) {
+      case Role.ADMIN:
         res.redirect("/admin");
         break;
-      case false:
-        res.cookie("token", userData.token);
+      case Role.ENVIRONMENTWORKER:
+      case Role.ITCOWORKER:
+      case Role.STUDENT:
+      case Role.TEACHER:
         res.redirect("/welcome");
         break;
     }
